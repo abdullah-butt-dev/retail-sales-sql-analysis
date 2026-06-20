@@ -1,3 +1,7 @@
+-- =====================================================
+-- EXPLORATORY ANALYTICS
+-- =====================================================
+
 SELECT ROUND(SUM(sales),2) AS total_revenue FROM sales;
 
 SELECT ROUND(SUM(profit),2) AS total_profit FROM sales;
@@ -24,7 +28,9 @@ SELECT region, ROUND(SUM(profit),2) AS profit FROM sales GROUP BY region ORDER B
 
 SELECT DATE_TRUNC('month',order_date) AS month, ROUND(SUM(sales), 2) revenue FROM sales GROUP BY month ORDER BY month;
 
--- Percentage Based Analytics
+-- =====================================================
+-- PERCENTAGE BASED ANALYTICS
+-- =====================================================
 
 WITH total AS(SELECT SUM(sales) total_sales FROM sales) SELECT category, ROUND(SUM(sales),2) revenue, ROUND(SUM(sales)*100.0/MAX(total_sales), 2) revenue_share_pct FROM sales CROSS JOIN total GROUP BY category ORDER BY revenue DESC;
 
@@ -58,7 +64,9 @@ SELECT category, ROUND(SUM(profit)*100.0/ SUM(sales), 2) profit_margin_pct FROM 
 
 SELECT segment, ROUND(SUM(profit)*100.0/ SUM(sales), 2) profit_margin_pct FROM sales GROUP BY segment ORDER BY profit_margin_pct DESC;
 
--- Intermediate SQL
+-- =====================================================
+-- INTERMEDIATE SQL
+-- =====================================================
 
 SELECT product_name, SUM(sales) revenue, ROW_NUMBER() OVER(ORDER BY SUM(sales) DESC) rank FROM sales GROUP BY product_name;
 
@@ -70,9 +78,9 @@ SELECT product_name, SUM(sales) revenue, ROW_NUMBER() OVER(ORDER BY SUM(sales) A
 
 SELECT product_name, SUM(profit) profit, ROW_NUMBER() OVER(ORDER BY SUM(profit) DESC) rank FROM sales GROUP BY product_name LIMIT 10;
 
- SELECT product_name, profit, ranking FROM (SELECT product_name, SUM(profit) AS profit, DENSE_RANK() OVER(ORDER BY SUM(profit) ASC) AS ranking  FROM sales GROUP BY product_name) AS ranking_products WHERE ranking <= 10; 
+SELECT product_name, profit, ranking FROM (SELECT product_name, SUM(profit) AS profit, DENSE_RANK() OVER(ORDER BY SUM(profit) ASC) AS ranking  FROM sales GROUP BY product_name) AS ranking_products WHERE ranking <= 10; 
 
- SELECT product_name, profit, CASE WHEN profit > 500 THEN 'High Profit' WHEN profit > 100 THEN 'Medium Profit' ELSE 'Low Profit' END profit_tier FROM sales ORDER BY profit DESC;
+SELECT product_name, profit, CASE WHEN profit > 500 THEN 'High Profit' WHEN profit > 100 THEN 'Medium Profit' ELSE 'Low Profit' END profit_tier FROM sales ORDER BY profit DESC;
 
 SELECT customer_name, SUM(sales) revenue, CASE WHEN SUM(sales) > 10000 THEN 'VIP' WHEN SUM(sales) > 5000 THEN 'Premium' ELSE 'Standard' END customer_tier FROM sales GROUP BY customer_name ORDER BY revenue DESC;
 
@@ -85,3 +93,21 @@ SELECT order_date, sales, SUM(sales) OVER(ORDER BY order_date ROWS BETWEEN UNBOU
 WITH monthly_sales AS (SELECT DATE_TRUNC('month', order_date) AS month, SUM(sales) revenue FROM sales GROUP BY month) SELECT month, revenue, SUM(revenue) OVER(ORDER BY month) cumulative_revenue FROM monthly_sales;
 
 WITH monthly_sales AS (SELECT DATE_TRUNC('month', order_date) AS month, SUM(sales) revenue FROM sales GROUP BY month) SELECT month, revenue, ROUND(AVG(revenue) OVER(ORDER BY month ROWS BETWEEN 2 PRECEDING AND CURRENT ROW), 2) moving_avg FROM monthly_sales;
+
+-- =====================================================
+-- BUSINESS QUESTIONS
+-- =====================================================
+
+SELECT category, SUM(sales) revenue FROM sales GROUP BY category ORDER BY revenue DESC LIMIT 1;
+
+SELECT region, ROUND(SUM(profit)*100.0/SUM(sales),2) profit_margin_pct FROM sales GROUP BY region ORDER BY profit_margin_pct LIMIT 1;
+
+SELECT product_name, SUM(sales) revenue FROM sales GROUP BY product_name ORDER BY revenue DESC LIMIT 10;
+
+WITH monthly_sales AS (SELECT DATE_TRUNC('month',order_date) AS month, SUM(sales) revenue FROM sales GROUP BY month), avg_sales AS (SELECT AVG(revenue) avg_revenue FROM monthly_sales) SELECT month, revenue FROM monthly_sales CROSS JOIN avg_sales WHERE revenue < avg_revenue ORDER BY revenue;
+
+SELECT segment, COUNT(DISTINCT order_id) orders FROM sales GROUP BY segment ORDER BY orders DESC;
+
+SELECT customer_name, SUM(sales) revenue FROM sales GROUP BY customer_name ORDER BY revenue DESC LIMIT 20;
+
+SELECT product_name, SUM(profit) total_profit FROM sales GROUP BY product_name HAVING SUM(profit) < 0 ORDER BY total_profit;
