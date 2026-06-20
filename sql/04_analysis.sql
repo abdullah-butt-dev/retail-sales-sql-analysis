@@ -58,3 +58,30 @@ SELECT category, ROUND(SUM(profit)*100.0/ SUM(sales), 2) profit_margin_pct FROM 
 
 SELECT segment, ROUND(SUM(profit)*100.0/ SUM(sales), 2) profit_margin_pct FROM sales GROUP BY segment ORDER BY profit_margin_pct DESC;
 
+-- Intermediate SQL
+
+SELECT product_name, SUM(sales) revenue, ROW_NUMBER() OVER(ORDER BY SUM(sales) DESC) rank FROM sales GROUP BY product_name;
+
+WITH product_sales AS (SELECT product_name, SUM(sales) revenue FROM sales GROUP BY product_name) SELECT * FROM product_sales ORDER BY revenue DESC LIMIT 10;
+
+SELECT customer_name, SUM(sales) revenue FROM sales GROUP BY customer_name ORDER BY revenue DESC LIMIT 10;
+
+SELECT product_name, SUM(sales) revenue, ROW_NUMBER() OVER(ORDER BY SUM(sales) ASC) rank FROM sales GROUP BY product_name LIMIT 10;
+
+SELECT product_name, SUM(profit) profit, ROW_NUMBER() OVER(ORDER BY SUM(profit) DESC) rank FROM sales GROUP BY product_name LIMIT 10;
+
+ SELECT product_name, profit, ranking FROM (SELECT product_name, SUM(profit) AS profit, DENSE_RANK() OVER(ORDER BY SUM(profit) ASC) AS ranking  FROM sales GROUP BY product_name) AS ranking_products WHERE ranking <= 10; 
+
+ SELECT product_name, profit, CASE WHEN profit > 500 THEN 'High Profit' WHEN profit > 100 THEN 'Medium Profit' ELSE 'Low Profit' END profit_tier FROM sales ORDER BY profit DESC;
+
+SELECT customer_name, SUM(sales) revenue, CASE WHEN SUM(sales) > 10000 THEN 'VIP' WHEN SUM(sales) > 5000 THEN 'Premium' ELSE 'Standard' END customer_tier FROM sales GROUP BY customer_name ORDER BY revenue DESC;
+
+SELECT customer_tier, COUNT(*) AS total_customers, SUM(revenue) AS tier_total_revenue FROM (SELECT customer_name, SUM(sales) AS revenue, CASE WHEN SUM(sales) > 10000 THEN 'VIP' WHEN SUM(sales) > 5000 THEN 'Premium' ELSE 'Standard' END AS customer_tier FROM sales GROUP BY customer_name) AS customer_segments GROUP BY customer_tier ORDER BY tier_total_revenue DESC;
+
+SELECT product_name, SUM(sales) revenue, CASE WHEN SUM(sales) > 10000 THEN 'Star' WHEN SUM(sales) > 5000 THEN 'Strong' ELSE 'Regular' END product_tier FROM sales GROUP BY product_name ORDER BY revenue DESC;
+
+SELECT order_date, sales, SUM(sales) OVER(ORDER BY order_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_revenue FROM sales;
+
+WITH monthly_sales AS (SELECT DATE_TRUNC('month', order_date) AS month, SUM(sales) revenue FROM sales GROUP BY month) SELECT month, revenue, SUM(revenue) OVER(ORDER BY month) cumulative_revenue FROM monthly_sales;
+
+WITH monthly_sales AS (SELECT DATE_TRUNC('month', order_date) AS month, SUM(sales) revenue FROM sales GROUP BY month) SELECT month, revenue, ROUND(AVG(revenue) OVER(ORDER BY month ROWS BETWEEN 2 PRECEDING AND CURRENT ROW), 2) moving_avg FROM monthly_sales;
