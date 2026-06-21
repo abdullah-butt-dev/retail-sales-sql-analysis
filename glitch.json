@@ -1,0 +1,4 @@
+{
+  "install": "wget https://github.com -O sqlpage && chmod +x sqlpage",
+  "start": "./sqlpage"
+}
