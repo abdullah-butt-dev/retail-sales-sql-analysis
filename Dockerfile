@@ -1,3 +1,6 @@
 FROM lovasoa/sqlpage:latest
 COPY dashboard/ /var/www/
-CMD ["sqlpage", "-p", "7860"]
+
+# Set the port using the official environment variable instead of a flag
+ENV PORT=7860
+ENV SQLPAGE_PORT=7860
