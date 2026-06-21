@@ -1,3 +1,11 @@
+---
+title: Retail Sales Analytics Dashboard
+emoji: 📊
+sdk: docker
+app_port: 7860
+---
+
+
 # Retail Sales SQL Analysis
 
 ## Overview
